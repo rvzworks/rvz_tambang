@@ -23,3 +23,4 @@
 - [`qb-core`] — compatible (adjust framework logic accordingly)
 
 ---
+© rvzworks — crafted with silence.
