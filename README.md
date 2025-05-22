@@ -20,6 +20,6 @@
 
 - [`ox_lib`](https://github.com/overextended/ox_lib)
 - [`ox_target`](https://github.com/overextended/ox_target) (or use basic interaction mode)
-- [`es_extended` / `qb-core`] — compatible (adjust framework logic accordingly)
+- [`qb-core`] — compatible (adjust framework logic accordingly)
 
 ---
