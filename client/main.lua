@@ -38,7 +38,7 @@ local function DeleteAndRespawn(entity)
     end
 end
 
-RegisterNetEvent('rvz_tambang:tambangBatu', function(entity)
+RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
     if not DoesEntityExist(entity) then
         lib.notify({ title = 'Error', description = 'Entity tidak valid', type = 'error' })
         return
@@ -65,7 +65,7 @@ RegisterNetEvent('rvz_tambang:tambangBatu', function(entity)
                 rot = vec3(-90.0, 0.0, 0.0)
             },
         }) then
-        TriggerServerEvent('rvz_tambang:dapatBatu')
+        TriggerServerEvent('rvz_tambang:server:dapatBatu')
         DeleteAndRespawn(entity)
     else
         lib.notify({
@@ -76,7 +76,7 @@ RegisterNetEvent('rvz_tambang:tambangBatu', function(entity)
     end
 end)
 
-RegisterNetEvent('rvz_tambang:cuciBatu', function()
+RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
     local hasItem = exports.ox_inventory:Search('count', 'batu')
     if hasItem >= 2 then
         if lib.progressBar({
@@ -100,7 +100,7 @@ RegisterNetEvent('rvz_tambang:cuciBatu', function()
                     rot = vec3(-90.0, 0.0, 0.0)
                 },
             }) then
-            TriggerServerEvent('rvz_tambang:dapatBatuCucian')
+            TriggerServerEvent('rvz_tambang:server:dapatBatuCucian')
         else
             lib.notify({
                 title = 'Batal',
@@ -117,7 +117,7 @@ RegisterNetEvent('rvz_tambang:cuciBatu', function()
     end
 end)
 
-RegisterNetEvent('rvz_tambang:smeltBatu', function()
+RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
     local hasItem = exports.ox_inventory:Search('count', 'batu_cucian')
     if hasItem >= 2 then
         if lib.progressBar({
@@ -135,7 +135,7 @@ RegisterNetEvent('rvz_tambang:smeltBatu', function()
                     clip = 'base'
                 },
             }) then
-            TriggerServerEvent('rvz_tambang:dapatHasilSmelting')
+            TriggerServerEvent('rvz_tambang:server:dapatHasilSmelting')
         else
             lib.notify({
                 title = 'Batal',
@@ -174,7 +174,7 @@ Citizen.CreateThread(function()
             coords = vector3(v.x, v.y, v.z),
             size = vector3(20, 20, 1.5),
             rotation = 0,
-            debug = true,
+            debug = false,
             options = {
                 {
                     name = 'cuci_batu',
