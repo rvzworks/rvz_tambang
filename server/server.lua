@@ -1,9 +1,3 @@
-
-RegisterNetEvent('rvz_tambang:tryBreakRock', function(netId)
-    local src = source
-    TriggerClientEvent('rvz_tambang:tambangBatu', src, netId)
-end)
-
 RegisterNetEvent('rvz_tambang:dapatBatu', function()
     local src = source
     exports.ox_inventory:AddItem(src, 'batu', math.random(Config.HasilBatu.min, Config.HasilBatu.max))
@@ -15,3 +9,10 @@ RegisterNetEvent('rvz_tambang:dapatBatuCucian', function()
     exports.ox_inventory:AddItem(src, 'batu_cucian', 2)
 end)
 
+RegisterNetEvent('rvz_tambang:dapatHasilSmelting', function()
+    local src = source
+    exports.ox_inventory:RemoveItem(src, 'batu_cucian', 2)
+
+    -- Item Tambang
+    exports.ox_inventory:RemoveItem(src, 'batu', 2)
+end)

@@ -16,10 +16,6 @@ local function SpawnBatu()
         local obj = CreateObject(model, pos.x, pos.y, pos.z, true, true, true)
         FreezeEntityPosition(obj, true)
         SetEntityAsMissionEntity(obj, true, true)
-
-        local netId = NetworkGetNetworkIdFromEntity(obj)
-        SetNetworkIdExistsOnAllMachines(netId, true)
-
         spawnedObjects[i] = obj
     end
 end
@@ -30,13 +26,11 @@ local function DeleteAndRespawn(entity)
             DeleteEntity(obj)
             spawnedObjects[i] = nil
 
-            SetTimeout(10000, function()
+            SetTimeout(Config.SpawnBatuCooldown, function()
                 local pos = Config.SpawnBatu[i]
                 local newObj = CreateObject(model, pos.x, pos.y, pos.z, true, true, true)
                 FreezeEntityPosition(newObj, true)
                 SetEntityAsMissionEntity(newObj, true, true)
-                local netId = NetworkGetNetworkIdFromEntity(newObj)
-                SetNetworkIdExistsOnAllMachines(netId, true)
                 spawnedObjects[i] = newObj
             end)
             break
@@ -123,10 +117,46 @@ RegisterNetEvent('rvz_tambang:cuciBatu', function()
     end
 end)
 
+RegisterNetEvent('rvz_tambang:smeltBatu', function()
+    local hasItem = exports.ox_inventory:Search('count', 'batu_cucian')
+    if hasItem >= 2 then
+        if lib.progressBar({
+                duration = 5000,
+                label = 'Smelting Batu',
+                useWhileDead = false,
+                canCancel = true,
+                disable = {
+                    car = true,
+                    move = true,
+                    combat = true
+                },
+                anim = {
+                    dict = 'amb@prop_human_bum_shopping_cart@male@base',
+                    clip = 'base'
+                },
+            }) then
+            TriggerServerEvent('rvz_tambang:dapatHasilSmelting')
+        else
+            lib.notify({
+                title = 'Batal',
+                description = 'Smelting Batu dibatalkan',
+                type = 'error'
+            })
+        end
+    else
+        lib.notify({
+            title = 'Error',
+            description = 'Kamu tidak memiliki cukup batu cucian',
+            type = 'error'
+        })
+    end
+end)
+
 Citizen.CreateThread(function()
     SpawnBatu()
     exports.ox_target:addModel(model, {
         {
+            name = 'ambil_batu',
             label = 'Ambil Batu',
             icon = 'fas fa-hammer',
             distance = 2,
@@ -138,22 +168,42 @@ Citizen.CreateThread(function()
     })
 
     -- Cuci Batu
-    exports.ox_target:addBoxZone({
-        name = 'cuci_batu',
-        coords = vector3(1915.9977, 330.9988, 161.5980),
-        size = vector3(20, 20, 1.5),
-        rotation = 0,
-        debug = true,
-        options = {
-            {
-                name = 'cuci_batu',
-                label = 'Cuci Batu',
-                icon = 'fas fa-water',
-                distance = 2,
-                onSelect = function()
-                    TriggerEvent('rvz_tambang:cuciBatu')
-                end
+    for k, v in pairs(Config.CuciBatu) do
+        exports.ox_target:addBoxZone({
+            name = 'cuci_batu',
+            coords = vector3(v.x, v.y, v.z),
+            size = vector3(20, 20, 1.5),
+            rotation = 0,
+            debug = true,
+            options = {
+                {
+                    name = 'cuci_batu',
+                    label = 'Cuci Batu',
+                    icon = 'fas fa-water',
+                    distance = 2,
+                    onSelect = function()
+                        TriggerEvent('rvz_tambang:cuciBatu')
+                    end
+                }
             }
+        })
+    end
+
+    -- Smelt Batu
+    exports.ox_target:addBoxZone({
+        name = 'smelt_batu',
+        coords = vector3(1110.87, -2008.65, 31.31),
+        size = vector3(1, 1, 1.5),
+        rotation = 0,
+        debug = false,
+        options = {
+            name = 'smelt_batu',
+            label = 'Smelt Batu',
+            icon = 'fas fa-water',
+            distance = 2,
+            onSelect = function ()
+                TriggerEvent('rvz_tambang:smeltBatu')
+            end
         }
     })
 end)
