@@ -40,7 +40,7 @@ end
 
 RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
     if not DoesEntityExist(entity) then
-        lib.notify({ title = 'Error', description = 'Entity tidak valid', type = 'error' })
+        lib.notify({ title = 'Error', description = 'Entity tidak valid', type = 'error', position = 'center-right' })
         return
     end
 
@@ -71,7 +71,8 @@ RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
         lib.notify({
             title = 'Batal',
             description = 'Mengambil Batu dibatalkan',
-            type = 'error'
+            type = 'error',
+            position = 'center-right'
         })
     end
 end)
@@ -105,14 +106,16 @@ RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
             lib.notify({
                 title = 'Batal',
                 description = 'Mencuci Batu dibatalkan',
-                type = 'error'
+                type = 'error',
+                position = 'center-right'
             })
         end
     else
         lib.notify({
             title = 'Error',
             description = 'Kamu tidak memiliki cukup batu',
-            type = 'error'
+            type = 'error',
+            position = 'center-right'
         })
     end
 end)
@@ -140,14 +143,16 @@ RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
             lib.notify({
                 title = 'Batal',
                 description = 'Smelting Batu dibatalkan',
-                type = 'error'
+                type = 'error',
+                position = 'center-right'
             })
         end
     else
         lib.notify({
             title = 'Error',
             description = 'Kamu tidak memiliki cukup batu cucian',
-            type = 'error'
+            type = 'error',
+            position = 'center-right'
         })
     end
 end)
