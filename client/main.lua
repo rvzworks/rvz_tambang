@@ -167,7 +167,7 @@ Citizen.CreateThread(function()
             distance = 2,
             onSelect = function(data)
                 local entity = data.entity
-                TriggerEvent('rvz_tambang:tambangBatu', entity)
+                TriggerEvent('rvz_tambang:client:tambangBatu', entity)
             end
         }
     })
@@ -187,7 +187,7 @@ Citizen.CreateThread(function()
                     icon = 'fas fa-water',
                     distance = 2,
                     onSelect = function()
-                        TriggerEvent('rvz_tambang:cuciBatu')
+                        TriggerEvent('rvz_tambang:client:cuciBatu')
                     end
                 }
             }
@@ -207,7 +207,7 @@ Citizen.CreateThread(function()
             icon = 'fas fa-water',
             distance = 2,
             onSelect = function ()
-                TriggerEvent('rvz_tambang:smeltBatu')
+                TriggerEvent('rvz_tambang:client:smeltBatu')
             end
         }
     })
