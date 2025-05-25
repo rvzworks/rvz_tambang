@@ -1,6 +1,7 @@
 QBCore = exports['qb-core']:GetCoreObject()
 local model = 'prop_rock_1_c'
 local spawnedObjects = {}
+local lagiAction = false
 
 local function LoadModel(mdl)
     RequestModel(mdl)
@@ -78,7 +79,7 @@ RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
 end)
 
 RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
-    local hasItem = exports.ox_inventory:Search('count', 'batu')
+    local hasItem = exports.ox_inventory:Search('count', 'raw_ore')
     if hasItem >= 2 then
         if lib.progressBar({
                 duration = 5000,
@@ -91,14 +92,8 @@ RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
                     combat = true
                 },
                 anim = {
-                    dict = 'amb@prop_human_bum_shopping_cart@male@base',
-                    clip = 'base'
-                },
-                prop = {
-                    model = `prop_tool_pickaxe`,
-                    bone = 57005,
-                    pos = vec3(0.13, 0.0, -0.02),
-                    rot = vec3(-90.0, 0.0, 0.0)
+                    dict = 'amb@world_human_bum_wash@male@high@idle_a',
+                    clip = 'idle_a'
                 },
             }) then
             TriggerServerEvent('rvz_tambang:server:dapatBatuCucian')
@@ -121,7 +116,7 @@ RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
 end)
 
 RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
-    local hasItem = exports.ox_inventory:Search('count', 'batu_cucian')
+    local hasItem = exports.ox_inventory:Search('count', 'washed_ore')
     if hasItem >= 2 then
         if lib.progressBar({
                 duration = 5000,
@@ -157,8 +152,16 @@ RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
     end
 end)
 
+
 Citizen.CreateThread(function()
-    SpawnBatu()
+    for k, lokasi in pairs(Config.CuciBatu) do
+        local radiusBlip = AddBlipForRadius(lokasi.x, lokasi.y, lokasi.z, 100.0)
+        SetBlipColour(radiusBlip, 26) 
+        SetBlipAlpha(radiusBlip, 128) 
+    end
+end)
+
+Citizen.CreateThread(function()
     exports.ox_target:addModel(model, {
         {
             name = 'ambil_batu',
@@ -172,29 +175,6 @@ Citizen.CreateThread(function()
         }
     })
 
-    -- Cuci Batu
-    for k, v in pairs(Config.CuciBatu) do
-        exports.ox_target:addBoxZone({
-            name = 'cuci_batu',
-            coords = vector3(v.x, v.y, v.z),
-            size = vector3(20, 20, 1.5),
-            rotation = 0,
-            debug = false,
-            options = {
-                {
-                    name = 'cuci_batu',
-                    label = 'Cuci Batu',
-                    icon = 'fas fa-water',
-                    distance = 2,
-                    onSelect = function()
-                        TriggerEvent('rvz_tambang:client:cuciBatu')
-                    end
-                }
-            }
-        })
-    end
-
-    -- Smelt Batu
     exports.ox_target:addBoxZone({
         name = 'smelt_batu',
         coords = vector3(1110.87, -2008.65, 31.31),
@@ -202,15 +182,50 @@ Citizen.CreateThread(function()
         rotation = 0,
         debug = false,
         options = {
-            name = 'smelt_batu',
-            label = 'Smelt Batu',
-            icon = 'fas fa-water',
-            distance = 2,
-            onSelect = function ()
-                TriggerEvent('rvz_tambang:client:smeltBatu')
-            end
+            {
+                name = 'smelt_batu',
+                label = 'Smelt Batu',
+                icon = 'fas fa-water',
+                distance = 2,
+                onSelect = function()
+                    TriggerEvent('rvz_tambang:client:smeltBatu')
+                end
+            }
         }
     })
+
+    while true do
+        local waitTime = 1000 
+        local ped = PlayerPedId()
+        local playerCoords = GetEntityCoords(ped)
+        local isNear = false
+        for k, lokasi in pairs(Config.CuciBatu) do
+            local dist = #(playerCoords - vector3(lokasi.x, lokasi.y, lokasi.z))
+            if dist < 100 then
+                isNear = true
+                waitTime = 0 
+                if not lagiAction then
+                    lib.showTextUI('[E] - untuk cuci batu')
+                    if IsControlJustPressed(0, 38) then
+                        lagiAction = true              
+                        local success = lib.skillCheck('easy')
+                        if success then
+                            TriggerEvent('rvz_tambang:client:cuciBatu')
+                        end
+                        SetTimeout(5000, function()
+                            lagiAction = false
+                        end)
+                    end
+                end
+
+                break
+            end
+        end
+        if not isNear then
+            lib.hideTextUI()
+        end
+        Citizen.Wait(waitTime)
+    end
 end)
 
 AddEventHandler('onResourceStart', function(resource)

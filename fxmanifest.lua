@@ -2,8 +2,8 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-author 'rvzworks @ferdydiatmikaa'
-description 'rvzworks - Disnaker Pilot Job'
+author 'Rendezvous Works - @ferdydiatmikaa'
+description 'rvzworks - Disnaker Mining Job'
 version '1.0.0'
 
 shared_scripts {
