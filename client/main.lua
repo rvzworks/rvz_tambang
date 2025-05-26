@@ -1,5 +1,5 @@
 QBCore = exports['qb-core']:GetCoreObject()
-local model = 'prop_rock_1_c'
+local model = Config.ModelBatu
 local spawnedObjects = {}
 local lagiAction = false
 
@@ -12,7 +12,6 @@ end
 
 local function SpawnBatu()
     LoadModel(model)
-
     for i, pos in pairs(Config.SpawnBatu) do
         local obj = CreateObject(model, pos.x, pos.y, pos.z, true, true, true)
         FreezeEntityPosition(obj, true)
@@ -46,8 +45,8 @@ RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
     end
 
     if lib.progressBar({
-            duration = 5000,
-            label = 'Menambang Batu',
+            duration = Config.Progress.Tambang.duration,
+            label = Config.Progress.Tambang.label,
             useWhileDead = false,
             canCancel = true,
             disable = {
@@ -55,23 +54,15 @@ RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
                 move = true,
                 combat = true
             },
-            anim = {
-                dict = 'melee@hatchet@streamed_core',
-                clip = 'plyr_rear_takedown_b'
-            },
-            prop = {
-                model = `prop_tool_pickaxe`,
-                bone = 57005,
-                pos = vec3(0.13, 0.0, -0.02),
-                rot = vec3(-90.0, 0.0, 0.0)
-            },
+            anim = Config.Progress.Tambang.anim,
+            prop = Config.Progress.Tambang.prop
         }) then
         TriggerServerEvent('rvz_tambang:server:dapatBatu')
         DeleteAndRespawn(entity)
     else
         lib.notify({
             title = 'Batal',
-            description = 'Mengambil Batu dibatalkan',
+            description = 'Menambang Batu dibatalkan',
             type = 'error',
             position = 'center-right'
         })
@@ -79,11 +70,15 @@ RegisterNetEvent('rvz_tambang:client:tambangBatu', function(entity)
 end)
 
 RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
-    local hasItem = exports.ox_inventory:Search('count', 'raw_ore')
-    if hasItem >= 2 then
+    local itemName = Config.Item.BatuMentah
+    local itemRequired = 2
+    local hasItem = exports.ox_inventory:Search('count', itemName)
+
+    if hasItem >= itemRequired then
+        local progress = Config.Progress.Cuci
         if lib.progressBar({
-                duration = 5000,
-                label = 'Mencuci Batu',
+                duration = progress.duration,
+                label = progress.label,
                 useWhileDead = false,
                 canCancel = true,
                 disable = {
@@ -91,16 +86,14 @@ RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
                     move = true,
                     combat = true
                 },
-                anim = {
-                    dict = 'amb@world_human_bum_wash@male@high@idle_a',
-                    clip = 'idle_a'
-                },
+                anim = progress.anim,
+                prop = progress.prop -- optional, bisa nil
             }) then
             TriggerServerEvent('rvz_tambang:server:dapatBatuCucian')
         else
             lib.notify({
                 title = 'Batal',
-                description = 'Mencuci Batu dibatalkan',
+                description = progress.label .. ' dibatalkan',
                 type = 'error',
                 position = 'center-right'
             })
@@ -108,19 +101,24 @@ RegisterNetEvent('rvz_tambang:client:cuciBatu', function()
     else
         lib.notify({
             title = 'Error',
-            description = 'Kamu tidak memiliki cukup batu',
+            description = 'Kamu tidak memiliki cukup ' .. itemName:gsub('_', ' '),
             type = 'error',
             position = 'center-right'
         })
     end
 end)
 
+
 RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
-    local hasItem = exports.ox_inventory:Search('count', 'washed_ore')
-    if hasItem >= 2 then
+    local itemName = Config.Item.BatuCuci
+    local itemRequired = 2
+    local hasItem = exports.ox_inventory:Search('count', itemName)
+
+    if hasItem >= itemRequired then
+        local progress = Config.Progress.Smelt
         if lib.progressBar({
-                duration = 5000,
-                label = 'Smelting Batu',
+                duration = progress.duration,
+                label = progress.label,
                 useWhileDead = false,
                 canCancel = true,
                 disable = {
@@ -128,10 +126,7 @@ RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
                     move = true,
                     combat = true
                 },
-                anim = {
-                    dict = 'amb@prop_human_bum_shopping_cart@male@base',
-                    clip = 'base'
-                },
+                anim = progress.anim,
             }) then
             TriggerServerEvent('rvz_tambang:server:dapatHasilSmelting')
         else
@@ -145,19 +140,18 @@ RegisterNetEvent('rvz_tambang:client:smeltBatu', function()
     else
         lib.notify({
             title = 'Error',
-            description = 'Kamu tidak memiliki cukup batu cucian',
+            description = 'Kamu tidak memiliki cukup ' .. itemName:gsub('_', ' '),
             type = 'error',
             position = 'center-right'
         })
     end
 end)
 
-
 Citizen.CreateThread(function()
     for k, lokasi in pairs(Config.CuciBatu) do
-        local radiusBlip = AddBlipForRadius(lokasi.x, lokasi.y, lokasi.z, 100.0)
-        SetBlipColour(radiusBlip, 26) 
-        SetBlipAlpha(radiusBlip, 128) 
+        local radiusBlip = AddBlipForRadius(lokasi.x, lokasi.y, lokasi.z, 50.0)
+        SetBlipColour(radiusBlip, 26)
+        SetBlipAlpha(radiusBlip, 128)
     end
 end)
 
@@ -195,19 +189,19 @@ Citizen.CreateThread(function()
     })
 
     while true do
-        local waitTime = 1000 
+        local waitTime = 1000
         local ped = PlayerPedId()
         local playerCoords = GetEntityCoords(ped)
         local isNear = false
         for k, lokasi in pairs(Config.CuciBatu) do
             local dist = #(playerCoords - vector3(lokasi.x, lokasi.y, lokasi.z))
-            if dist < 100 then
+            if dist < 50 then
                 isNear = true
-                waitTime = 0 
+                waitTime = 0
                 if not lagiAction then
                     lib.showTextUI('[E] - untuk cuci batu')
                     if IsControlJustPressed(0, 38) then
-                        lagiAction = true              
+                        lagiAction = true
                         local success = lib.skillCheck('easy')
                         if success then
                             TriggerEvent('rvz_tambang:client:cuciBatu')
